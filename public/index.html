@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClusterSEO Pro - Advanced Keyword Clustering Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div>
+                        <h1 style="color: var(--text-primary);">ClusterSEO <span class="pro-badge">PRO</span></h1>
+                        <span class="tagline">Advanced Keyword Clustering & SERP Analysis</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="showHelp()">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+            
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="upload">
+                    <i class="fas fa-upload"></i> Upload
+                </button>
+                <button class="nav-tab" data-tab="manual">
+                    <i class="fas fa-keyboard"></i> Manual Input
+                </button>
+                <button class="nav-tab" data-tab="results" id="resultsTab" disabled>
+                    <i class="fas fa-chart-bar"></i> Results
+                </button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Tab -->
+            <section id="uploadTab" class="tab-content active">
+                <div class="card upload-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-cloud-upload-alt"></i> Upload Your Keywords</h2>
+                        <p>Upload CSV or TXT files with keywords and search volumes</p>
+                    </div>
+                    
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" accept=".csv,.txt" hidden>
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <h3>Drag & Drop Your File</h3>
+                            <p>Supported formats: CSV, TXT (max 10MB)</p>
+                            <p class="file-format">Format: <code>keyword,volume</code> or one keyword per line</p>
+                            <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Browse Files
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-preview" id="filePreview" style="display: none;">
+                        <div class="file-info">
+                            <i class="fas fa-file-alt"></i>
+                            <div>
+                                <h4 id="fileName"></h4>
+                                <p id="fileStats"></p>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="removeFile()">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-success" id="processFileBtn" onclick="processUploadedFile()" disabled>
+                            <i class="fas fa-cogs"></i> Process File
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Manual Input Tab -->
+            <section id="manualTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-keyboard"></i> Manual Keyword Input</h2>
+                        <p>Enter keywords directly or paste from spreadsheet</p>
+                    </div>
+                    
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="keywordsInput">
+                                <i class="fas fa-key"></i> Keywords (one per line or comma separated)
+                            </label>
+                            <textarea id="keywordsInput" rows="10" placeholder="Enter your keywords here..."></textarea>
+                            <div class="input-footer">
+                                <span id="keywordCount">0 keywords</span>
+                                <button class="btn btn-outline btn-sm" onclick="clearKeywords()">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-panel">
+                            <div class="setting-group">
+                                <label for="clusterThreshold">
+                                    <i class="fas fa-sliders-h"></i> Clustering Sensitivity
+                                </label>
+                                <div class="slider-container">
+                                    <input type="range" id="clusterThreshold" min="0" max="1" value="0.5" step="0.05">
+                                    <!-- <input type="range" id="clusterThreshold" min="0.1" max="0.9" value="0.45" step="0.05"> -->
+                                    <div class="slider-labels">
+                                        <span>Loose</span>
+                                        <span id="thresholdValue">45%</span>
+                                        <span>Tight</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" id="analyzeBtn" onclick="analyzeKeywords()">
+                                <i class="fas fa-play-circle"></i> Start Clustering Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Tab -->
+            <section id="resultsTab" class="tab-content">
+                <div class="results-header">
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalClusters">0</h3>
+                                <p>Total Clusters</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalKeywords">0</h3>
+                                <p>Keywords</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalVolume">0</h3>
+                                <p>Total Volume</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="intent-distribution" id="intentDistribution">
+                        <div class="intent-stat-card informational" data-intent="Informational">
+                            <div class="intent-stat-icon informational">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="intent-stat-count" id="infoCount">0</div>
+                            <div class="intent-stat-label">Informational</div>
+                        </div>
+                        <div class="intent-stat-card transactional" data-intent="Transactional">
+                            <div class="intent-stat-icon transactional">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="intent-stat-count" id="transCount">0</div>
+                            <div class="intent-stat-label">Transactional</div>
+                        </div>
+                        <div class="intent-stat-card commercial" data-intent="Commercial">
+                            <div class="intent-stat-icon commercial">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="intent-stat-count" id="commCount">0</div>
+                            <div class="intent-stat-label">Commercial</div>
+                        </div>
+                        <div class="intent-stat-card navigational" data-intent="Navigational">
+                            <div class="intent-stat-icon navigational">
+                                <i class="fas fa-compass"></i>
+                            </div>
+                            <div class="intent-stat-count" id="navCount">0</div>
+                            <div class="intent-stat-label">Navigational</div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="copyResults()">
+                            <i class="fas fa-copy"></i> Copy Results
+                        </button>
+                        <button class="btn btn-outline" onclick="exportResults('csv')">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Intent-Based Clusters Display -->
+                <div class="clusters-container" id="clustersContainer">
+                    <!-- Clusters will be dynamically inserted here organized by intent -->
+                </div>
+            </section>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <h3>Analyzing Keywords</h3>
+                    <p id="loadingMessage">Computing SERP similarity matrix...</p>
+                    <div class="progress">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Modal -->
+            <div class="modal" id="errorModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                        <button class="modal-close" onclick="closeModal('errorModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="errorMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="closeModal('errorModal')">OK</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Modal -->
+            <div class="modal" id="helpModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-question-circle"></i> Help & Instructions</h3>
+                        <button class="modal-close" onclick="closeModal('helpModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <h4>How to use ClusterSEO Pro</h4>
+                        <ol>
+                            <li><strong>Upload CSV/TXT file</strong> with keywords and optional search volumes</li>
+                            <li><strong>Or manually input</strong> keywords in the Manual Input tab</li>
+                            <li><strong>Adjust clustering sensitivity</strong> to control how tightly keywords are grouped</li>
+                            <li><strong>Click "Start Clustering Analysis"</strong> to process</li>
+                            <li><strong>View results</strong> with SERP overlap, intent detection, and volume data</li>
+                        </ol>
+                        
+                        <h4>Keyword Intent Classification</h4>
+                        <ul>
+                            <li><strong>Informational:</strong> Keywords seeking information (what, how, why, guide, tutorial)</li>
+                            <li><strong>Transactional:</strong> Keywords showing purchase intent (buy, price, order, shop)</li>
+                            <li><strong>Commercial:</strong> Keywords comparing options (best, review, compare, vs)</li>
+                            <li><strong>Navigational:</strong> Keywords looking for specific sites (login, website, official)</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="closeModal('helpModal')">Got it!</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>ClusterSEO Pro v4.0 &copy; 2024 | Advanced Keyword Clustering Tool</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
