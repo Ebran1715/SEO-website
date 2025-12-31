@@ -44,12 +44,7 @@ const upload = multer({
 function detectIntent(keyword) {
   const kw = keyword.toLowerCase().trim();
 
-  console.log(`Detecting intent for: "${keyword}"`);
-
-  if (kw.includes('best')) {
-    console.log('  → Commercial');
-    return 'Commercial';
-  }
+  if (kw.includes('best')) return 'Commercial';
 
   if (
     kw.includes('buy') ||
@@ -58,10 +53,7 @@ function detectIntent(keyword) {
     kw.includes('order') ||
     kw.includes('shop') ||
     kw.includes('cost')
-  ) {
-    console.log('  → Transactional');
-    return 'Transactional';
-  }
+  ) return 'Transactional';
 
   if (
     kw.includes('login') ||
@@ -70,12 +62,9 @@ function detectIntent(keyword) {
     kw.includes('official') ||
     kw.includes('app') ||
     kw.includes('web')
-  ) {
-    console.log('  → Navigational');
-    return 'Navigational';
-  }
+  ) return 'Navigational';
 
-  console.log('  → Informational (default)');
+  // Default for anything else
   return 'Informational';
 }
 
@@ -102,8 +91,6 @@ app.post('/api/process-keywords', async (req, res) => {
         ? volumes.map(v => Number(v) || 0)
         : new Array(keywords.length).fill(0);
 
-    console.log(`\n=== PROCESSING ${keywords.length} KEYWORDS ===`);
-
     const keywordObjects = keywords.map((keyword, index) => ({
       keyword,
       volume: parsedVolumes[index],
@@ -117,6 +104,7 @@ app.post('/api/process-keywords', async (req, res) => {
       Navigational: []
     };
 
+    // Assign keywords to their intent categories
     keywordObjects.forEach(item => {
       keywordsByIntent[item.intent].push(item);
     });
@@ -132,11 +120,6 @@ app.post('/api/process-keywords', async (req, res) => {
         Navigational: keywordsByIntent.Navigational.length
       }
     };
-
-    console.log('\n=== INTENT DISTRIBUTION ===');
-    Object.entries(stats.intentDistribution).forEach(([intent, count]) => {
-      console.log(`${intent}: ${count} keywords`);
-    });
 
     res.json({
       success: true,
@@ -180,8 +163,6 @@ app.post('/api/process-csv', upload.single('file'), async (req, res) => {
         volumes.push(parseInt(parts[1]) || 0);
       }
     });
-
-    console.log(`\n=== PROCESSING CSV WITH ${keywords.length} KEYWORDS ===`);
 
     const keywordObjects = keywords.map((keyword, i) => ({
       keyword,
@@ -228,7 +209,7 @@ app.use((req, res) => {
 /* =====================
    START SERVER
 ===================== */
-const PORT = process.env.PORT || 9000;
+const PORT = process.env.PORT || 8000;
 
 ['uploads', 'public'].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
